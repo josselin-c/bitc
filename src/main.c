@@ -1204,6 +1204,7 @@ int main(int argc, char *argv[])
       }
    }
 
+   test_hmac512();
    if (btc->testnet) {
       printf("Using testnet.\n");
       usleep(500 * 1000);

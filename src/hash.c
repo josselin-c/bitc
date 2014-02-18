@@ -20,16 +20,16 @@
  */
 
 bool
-uint256_from_str(const char *str,
-                 uint256    *hash)
+byte_array_from_str(const char *str, char *array,
+		 size_t array_size)
 {
    int i;
 
-   if (strlen(str) != 2 * DIGEST_SHA256_LEN) {
+   if (strlen(str) != 2 * array_size) {
       return 0;
    }
 
-   for (i = 0; i < DIGEST_SHA256_LEN; i++) {
+   for (i = 0; i < array_size; i++) {
       char str0[3] = { 0 };
       uint32 v = 0;
       int res;
@@ -39,11 +39,41 @@ uint256_from_str(const char *str,
       if (res != 1) {
          return 0;
       }
-      hash->data[DIGEST_SHA256_LEN - i - 1] = v;
+      *array = v;
+      array++;
    }
    return 1;
 }
 
+/*
+ *-------------------------------------------------------------------------
+ *
+ * uint512_from_str --
+ *
+ *-------------------------------------------------------------------------
+ */
+
+bool
+uint512_from_str(const char *str,
+                 uint512    *hash)
+{
+   return byte_array_from_str(str, (char *)hash->data, DIGEST_SHA512_LEN);
+}
+
+/*
+ *-------------------------------------------------------------------------
+ *
+ * uint256_from_str --
+ *
+ *-------------------------------------------------------------------------
+ */
+
+bool
+uint256_from_str(const char *str,
+                 uint256    *hash)
+{
+   return byte_array_from_str(str, (char *)hash->data, DIGEST_SHA256_LEN);
+}
 
 /*
  *---------------------------------------------------
@@ -110,6 +140,22 @@ uint160_snprintf_reverse(char *str,
 }
 
 
+/*
+ *---------------------------------------------------
+ *
+ * uint512_snprintf_reverse --
+ *
+ *---------------------------------------------------
+ */
+
+void
+uint512_snprintf_reverse(char *str,
+                         size_t len,
+                         const uint512 *hash)
+{
+   ASSERT(len >= 2 * sizeof(uint512) + 1);
+   str_snprintf_bytes(str, len, NULL, hash->data, DIGEST_SHA512_LEN);
+}
 
 /*
  *---------------------------------------------------
@@ -134,6 +180,27 @@ uint256_snprintf_reverse(char *str,
    str_snprintf_bytes(str, len, NULL, h.data, ARRAYSIZE(h.data));
 }
 
+
+/*
+ *---------------------------------------------------
+ *
+ * sha512_calc --
+ *
+ *---------------------------------------------------
+ */
+
+void
+sha512_calc(const void *buf,
+            size_t      bufLen,
+            uint512    *digest)
+{
+   uint32 digestLen = sizeof *digest;
+   EVP_MD_CTX ctx;
+
+   EVP_DigestInit(&ctx, EVP_sha512());
+   EVP_DigestUpdate(&ctx, buf, bufLen);
+   EVP_DigestFinal(&ctx, digest->data, &digestLen);
+}
 
 /*
  *---------------------------------------------------

@@ -42,8 +42,15 @@ crypt_set_key_from_passphrase(const struct secure_area *pass,
                               int64 *count_ptr);
 
 void
+crypt_hmac_sha512(const void *text, size_t text_len,
+                  const uint8 *key,  size_t key_len,
+                  uint512 *digest);
+
+void
 crypt_hmac_sha256(const void *text, size_t text_len,
                   const uint8 *key,  size_t key_len,
                   uint256 *digest);
+
+void test_hmac512(void);
 
 #endif /* __CRYPT_H__ */
